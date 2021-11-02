@@ -1,18 +1,22 @@
 #include "chip8.h"
-chip8::chip8(std::string fname){
+chip8::chip8(const std::string &fname){
     initialize();
     filename = fname;
 }
 chip8::chip8(){
     initialize();
 }
+const unsigned char& chip8::getRegister(const int &i){
+    return V[i];
+}
 void chip8::initialize(){
+    memory.reserve(9000);
+    V.reserve(16);
     pc = 0x200; // program counter starts at 0x200
     opcode = 0; // Reset current opcode
     I = 0;  // reset index registers
     sp = 0; // reset stack registers
     keyPress = false;
-    bufferSize = 0;
     // Clear display
     for(int i = 0; i < 2048; ++i)
         gfx[i] = 0;
@@ -43,23 +47,37 @@ void chip8::initialize(){
     for (int i=0;i<80;i++){
         memory[i] = chip8_fontset[i];
     }
+==== BASE ====
+    // reset timers
+==== BASE ====
 }
 void chip8::dumpMemory(){
-    for(int i=0;i<bufferSize-4;i++){
-        printf("0x%.1X 0x%.1X 0x%.1X 0x%.1X\n",(int)memory[i],(int)memory[i+1],(int)memory[i+2],(int)memory[i+3]);
-    }
+  for(int i=0x200;i<=pc;i++){
+    printf("0x%.1X\n",memory[i]);
+  }
+}
+void chip8::dumpRegisters(){
+  for(int i=0;i<16;i++){
+    printf("V%d=0x%.1X\n",i,V[i]);
+  }
 }
 bool chip8::finished(){
-  if (pc >= bufferSize){
-    return true;
-  }
-  return false;
+  if (memory[pc] != 0)
+    return false;
+  return true;
 }
+unsigned short chip8::getPC(){
+  return pc;
+}
+
+const std::vector<unsigned char> chip8::getMemory(){
+  return memory;
+}
+
 void chip8::emulateCycle(){
-
-    opcode = memory[pc] << 8 | memory[pc+1];
-
-    // decode opcode
+    opcode = memory[pc];
+    opcode <<= 8;
+    opcode |= memory[pc+1];
     switch (opcode & 0xF000)
     {
         case 0xAAA:
@@ -76,7 +94,6 @@ void chip8::emulateCycle(){
                     printf("Unknown opcode [0x000]: 0x0%X",opcode);
             }
             break;
-
         // TODO: implement the opcodes
         case 0x1000:
             pc = opcode & 0x0FFF;
@@ -88,13 +105,13 @@ void chip8::emulateCycle(){
         }
         break;
         case 0x3000:{
-                unsigned short v = opcode & V[(opcode & 0x0F00) >> 8];
-                if (v == (opcode & 0x00FF)){
-                    pc+=4;
-                }
-                else{
-                    pc+=2;
-                }
+            unsigned short v = opcode & V[(opcode & 0x0F00) >> 8];
+            if (v == (opcode & 0x00FF)){
+                pc+=4;
+            }
+            else{
+                pc+=2;
+            }
         }
         break;
         case 0x4000:{
@@ -122,7 +139,7 @@ void chip8::emulateCycle(){
         }
         break;
         case 0x7000:{
-            V[(opcode & 0x0F00) >> 8]+= opcode & 0x00FF;
+            V[(opcode & 0x0F00) >> 8] += opcode & 0x00FF;
             pc+=2;
         }
         break;
@@ -155,7 +172,7 @@ void chip8::emulateCycle(){
                     else{
                         V[0xF] = 0;
                     }
-                    V[(opcode & 0x0F00) >> 8]+=V[(opcode & 0x00F0) >> 4];
+                    V[ (opcode & 0x0F00) >> 8 ] += V[ (opcode & 0x00F0) >> 4 ];
                     pc+=2;
                 }
                 break;
@@ -197,7 +214,7 @@ void chip8::emulateCycle(){
                 }
                 break;
             }
-        } 
+        }
         break;
         case 0x9000:{
             unsigned short vx = V[(opcode & 0x0F00) >> 8];
@@ -348,15 +365,20 @@ void chip8::emulateCycle(){
         --sound_timer;
     }
 }
-void chip8::loadGame(std::string &filename){
+
+void chip8::loadGameFromFile(const std::string &filename){
     initialize();
     std::ifstream input(filename,std::ios::binary);
     std::vector<unsigned char> buffer(std::istreambuf_iterator<char>(input),{});
-    bufferSize = buffer.size();
-    for(auto iter = buffer.begin();iter!=buffer.end();iter++){
-       int res = (int) *iter;
-    }
     for(int i=0;i<buffer.size();i++){
         memory[i+512] = buffer[i];
+    }
+    input.close();
+}
+
+void chip8::loadGameFromBuffer(const std::vector<unsigned char> &gameRom){
+    initialize();
+    for(int i=0;i<gameRom.size();i++){
+        memory[i+512] = gameRom[i];
     }
 }

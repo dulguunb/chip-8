@@ -82,14 +82,12 @@ int main(){
     // SDL_DestroyWindow(win);
     // SDL_Quit();
     // SDL_Quit();
-    std::string fileName = "roms/pong2.c8";
-    cpu.loadGame(fileName);
-    while(true){
+    std::string fileName = "roms/hello.rom";
+    cpu.loadGameFromFile(fileName);
+    while(!cpu.finished()){
         cpu.emulateCycle();
-        cpu.dumpMemory();
-        if (cpu.finished()){
-            break;
-        }
     }
-
+    cpu.dumpRegisters();
+    cpu.dumpMemory();
 }
+==== BASE ====

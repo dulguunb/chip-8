@@ -13,9 +13,9 @@ class chip8 {
         unsigned short I;
         unsigned short sp;
         unsigned short stack[16];
-        unsigned char memory[4096];
+        std::vector<unsigned char> memory;
         int bufferSize;
-        unsigned char V[16]; // CPU registers
+        std::vector<unsigned char> V; // CPU registers
         unsigned char gfx[64 * 32]; // the screen has pixel of 2048
         unsigned char delay_timer;
         unsigned char sound_timer;
@@ -42,12 +42,17 @@ class chip8 {
         bool drawFlag = false;
         std::string filename;
     public:
+        unsigned short getPC();
+        const std::vector<unsigned char> getMemory();
+        const unsigned char& getRegister(const int &i);
         chip8();
-        chip8(std::string filename);
+        chip8(const std::string &filename);
         void initialize();
         void emulateCycle(); //fetch Opcode, decode opcode, execute opcode, update timers
-        void loadGame(std::string &filename);
+        void loadGameFromBuffer(const std::vector<unsigned char> &gameRom);
+        void loadGameFromFile(const std::string &filename);
         void dumpMemory();
+        void dumpRegisters();
         bool finished();
 };
 

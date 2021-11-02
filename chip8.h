@@ -1,6 +1,11 @@
 #ifndef CHIP_8
 #define CHIP_8
-#include <stdio.h>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <fstream>
+#include <iterator>
+#include <time.h>
 class chip8 {
     private:
         unsigned short pc;
@@ -9,11 +14,13 @@ class chip8 {
         unsigned short sp;
         unsigned short stack[16];
         unsigned char memory[4096];
+        int bufferSize;
         unsigned char V[16]; // CPU registers
         unsigned char gfx[64 * 32]; // the screen has pixel of 2048
         unsigned char delay_timer;
         unsigned char sound_timer;
         unsigned char key[16];
+        bool keyPress;
         unsigned char chip8_fontset[80] = {
             0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
             0x20, 0x60, 0x20, 0x20, 0x70, // 1
@@ -33,11 +40,15 @@ class chip8 {
             0xF0, 0x80, 0xF0, 0x80, 0x80  // F
         };
         bool drawFlag = false;
+        std::string filename;
     public:
-        chip8() = default;
+        chip8();
+        chip8(std::string filename);
         void initialize();
         void emulateCycle(); //fetch Opcode, decode opcode, execute opcode, update timers
-        void loadGame(unsigned char buffer[], int bufferSize);
+        void loadGame(std::string &filename);
+        void dumpMemory();
+        bool finished();
 };
 
 

@@ -1,0 +1,18 @@
+sudo: required
+dist: focal
+language: c++
+compiler:
+  - clang
+  - gcc
+branches:
+ - main
+before_install:
+  - sudo apt install libgtest-dev
+  - sudo apt-get install libsdl2-dev
+jobs:
+  include:
+    - stage: build
+      script: make all
+    - stage: run-unit-test
+    - script: ./chip8_test
+

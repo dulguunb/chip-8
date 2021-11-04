@@ -47,9 +47,6 @@ void chip8::initialize(){
     for (int i=0;i<80;i++){
         memory[i] = chip8_fontset[i];
     }
-==== BASE ====
-    // reset timers
-==== BASE ====
 }
 void chip8::dumpMemory(){
   for(int i=0x200;i<=pc;i++){
